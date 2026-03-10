@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 import requests
 from datetime import datetime
+from prompt_toolkit import prompt
 
 class GitAnalyzer:
     """Classe para analisar alterações do Git."""
@@ -422,7 +423,7 @@ class CommitMessageGenerator:
         self._interactive_commit(suggestions)
     
     def _interactive_commit(self, suggestions: List[str]) -> None:
-        """Permite aplicar commit interactivamente."""
+        """Permite aplicar commit interactivamente com opção de edição."""
         try:
             if self.language == "pt":
                 choice = input("\n🚀 Aplicar alguma sugestão? (1-3 ou Enter para saltar): ").strip()
@@ -431,22 +432,53 @@ class CommitMessageGenerator:
                     idx = int(choice) - 1
                     if 0 <= idx < len(suggestions):
                         message = suggestions[idx]
-                        confirm = input(f"Confirmar commit: '{message}'? (s/N): ").strip().lower()
                         
-                        if confirm in ['s', 'sim']:
-                            result = subprocess.run(
-                                ["git", "commit", "-m", message],
-                                cwd=self.git_analyzer.repo_path,
-                                capture_output=True,
-                                text=True
-                            )
+                        # Loop para permitir edição
+                        while True:
+                            print(f"\n📝 Sugestão selecionada: '{message}'")
+                            action = input("Quer (A)plicar, (E)ditar ou (C)ancelar? (a/e/c): ").strip().lower()
                             
-                            if result.returncode == 0:
-                                print("✅ Commit aplicado com sucesso!")
+                            if action in ['e', 'editar']:
+                                # Permite ao utilizador editar a mensagem
+                                print("\n✏️  Digite a nova mensagem de commit (ou deixe em branco para cancelar):")
+                                print(f"Original: {message}")
+                                # new_message = input(f"Nova mensagem: ").strip()
+
+                                new_message = prompt("Nova mensagem: ", default=message)
+                                
+                                if new_message:
+                                    message = new_message
+                                    print(f"✅ Mensagem atualizada: '{message}'")
+                                else:
+                                    print("Edição cancelada.")
+                                # Volta ao loop para perguntar o que fazer
+                                continue
+                            
+                            elif action in ['a', 'aplicar']:
+                                confirm = input(f"Confirmar commit: '{message}'? (s/N): ").strip().lower()
+                                
+                                if confirm in ['s', 'sim']:
+                                    result = subprocess.run(
+                                        ["git", "commit", "-m", message],
+                                        cwd=self.git_analyzer.repo_path,
+                                        capture_output=True,
+                                        text=True
+                                    )
+                                    
+                                    if result.returncode == 0:
+                                        print("✅ Commit aplicado com sucesso!")
+                                    else:
+                                        print(f"❌ Erro ao aplicar commit: {result.stderr}")
+                                else:
+                                    print("Commit cancelado.")
+                                break
+                            
+                            elif action in ['c', 'cancelar']:
+                                print("Operação cancelada.")
+                                break
+                            
                             else:
-                                print(f"❌ Erro ao aplicar commit: {result.stderr}")
-                        else:
-                            print("Commit cancelado.")
+                                print("❌ Opção inválida. Use (A)plicar, (E)ditar ou (C)ancelar")
             else:
                 choice = input("\n🚀 Apply a suggestion? (1-3 or Enter to skip): ").strip()
                 
@@ -454,22 +486,53 @@ class CommitMessageGenerator:
                     idx = int(choice) - 1
                     if 0 <= idx < len(suggestions):
                         message = suggestions[idx]
-                        confirm = input(f"Confirm commit: '{message}'? (y/N): ").strip().lower()
                         
-                        if confirm in ['y', 'yes']:
-                            result = subprocess.run(
-                                ["git", "commit", "-m", message],
-                                cwd=self.git_analyzer.repo_path,
-                                capture_output=True,
-                                text=True
-                            )
+                        # Loop para permitir edição
+                        while True:
+                            print(f"\n📝 Selected suggestion: '{message}'")
+                            action = input("Do you want to (A)pply, (E)dit or (C)ancel? (a/e/c): ").strip().lower()
                             
-                            if result.returncode == 0:
-                                print("✅ Commit applied successfully!")
+                            if action in ['e', 'edit']:
+                                # Permite ao utilizador editar a mensagem
+                                print("\nType the new commit message (or leave blank to cancel):")
+                                print(f"Original: {message}")
+                                # new_message = input("New message: ").strip()
+
+                                new_message = prompt("New message: ", default=message)
+                                
+                                if new_message:
+                                    message = new_message
+                                    print(f"✅ Message updated: '{message}'")
+                                else:
+                                    print("Edit cancelled.")
+                                # Volta ao loop para perguntar o que fazer
+                                continue
+                            
+                            elif action in ['a', 'apply']:
+                                confirm = input(f"Confirm commit: '{message}'? (y/N): ").strip().lower()
+                                
+                                if confirm in ['y', 'yes']:
+                                    result = subprocess.run(
+                                        ["git", "commit", "-m", message],
+                                        cwd=self.git_analyzer.repo_path,
+                                        capture_output=True,
+                                        text=True
+                                    )
+                                    
+                                    if result.returncode == 0:
+                                        print("✅ Commit applied successfully!")
+                                    else:
+                                        print(f"❌ Error applying commit: {result.stderr}")
+                                else:
+                                    print("Commit cancelled.")
+                                break
+                            
+                            elif action in ['c', 'cancel']:
+                                print("Operation cancelled.")
+                                break
+                            
                             else:
-                                print(f"❌ Error applying commit: {result.stderr}")
-                        else:
-                            print("Commit cancelled.")
+                                print("❌ Invalid option. Use (A)pply, (E)dit or (C)ancel")
             
         except (ValueError, KeyboardInterrupt):
             if self.language == "pt":
