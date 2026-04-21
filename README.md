@@ -40,18 +40,33 @@ python git_commit_ai.py --lang en --debug
 # Repositório específico
 python git_commit_ai.py --repo /caminho/para/repo --lang pt
 
-# Todos os argumentos
+# Todos os argumentos (Ollama)
 python git_commit_ai.py --model llama3.2 --lang en --repo ./meu-projeto --debug
+
+# Usar OpenRouter (necessita variável de ambiente OPENROUTER_API_KEY)
+export OPENROUTER_API_KEY="sua_chave_aqui"
+python git_commit_ai.py --provider openrouter --model openrouter/auto --lang en
+
+# Usar OpenRouter com variável de ambiente customizada
+export MINHA_API_KEY="sua_chave_aqui"
+python git_commit_ai.py --provider openrouter --api-key-env MINHA_API_KEY --model openrouter/auto --lang en
+
+# Definir timeout da API (ex.: 60 s)
+python git_commit_ai.py --api-timeout 60
 ```
 
 ## ⚙️ Argumentos disponíveis
 
-| Argumento      | Descrição                                      | Padrão         |
-|----------------|------------------------------------------------|----------------|
-| `--lang`       | Idioma da mensagem (`pt` ou `en`)              | `pt`           |
-| `--repo`       | Caminho para o repositório Git                 | diretório atual|
-| `--model`      | Nome do modelo Ollama a usar                   | `mistral`      |
-| `--debug`      | Ativa modo verboso para depuração              | `False`        |
+| Argumento      | Descrição                                      | Padrão                 |
+|----------------|------------------------------------------------|-----------------------|
+| `--provider`   | Provedor de IA (`ollama` ou `openrouter`)     | `ollama`              |
+| `--model`      | Nome do modelo a usar (dependente do provedor) | `llama3.2`            |
+| `--repo`       | Caminho para o repositório Git                 | diretório atual        |
+| `--lang`       | Idioma da mensagem (`pt` ou `en`)              | `pt`                  |
+| `--debug`      | Ativa modo verboso para depuração              | `False`               |
+| `--api-timeout`| Timeout (segundos) para chamadas à API        | `30.0`                |
+| `--api-key-env`| Nome da variável de ambiente com a API‑key (só usado por OpenRouter) | `OPENROUTER_API_KEY` |
+
 
 ## 🧠 Modelos suportados
 
